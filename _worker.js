@@ -1,5 +1,5 @@
 // 设置默认的 token
-let defaultToken = '@yixiu';
+let defaultToken = '@';
 
 // 导出 Cloudflare Worker
 export default {
@@ -35,93 +35,74 @@ export default {
         if (token === defaultToken) {
 
             // 处理文件上传请求
-            if (url.pathname === "/upload" && request.method === "POST") {
-                // 解析表单数据
-                const formData = await request.formData();
-                const file = formData.get('file');
-                const encryption = formData.get('encryption');
-                if (!file) {
-                    // 若未上传文件，则返回 400 错误
-                    return new Response('未上传文件', { status: 400 });
-                }
-                // 读取文件内容
-                const arrayBuffer = await file.arrayBuffer();
-                let fileContent = arrayBuffer;
-                // 若选择了密文加密，则对文件内容进行 base64 编码
-                if(encryption == "ciphertext"){
-                     fileContent = base64Encode(arrayBuffer);
-                }
-                // 检查文件是否已存在于 KV 存储中
-                await checkFileExists(kvNamespace, file.name);
+            // if (url.pathname === "/upload" && request.method === "POST") {
+            //     // 解析表单数据
+            //     const formData = await request.formData();
+            //     const file = formData.get('file');
+            //     const encryption = formData.get('encryption');
+            //     if (!file) {
+            //         // 若未上传文件，则返回 400 错误
+            //         return new Response('未上传文件', { status: 400 });
+            //     }
+            //     // 读取文件内容
+            //     const arrayBuffer = await file.arrayBuffer();
+            //     let fileContent = arrayBuffer;
+            //     // 若选择了密文加密，则对文件内容进行 base64 编码
+            //     if(encryption == "ciphertext"){
+            //          fileContent = base64Encode(arrayBuffer);
+            //     }
+            //     // 检查文件是否已存在于 KV 存储中
+            //     await checkFileExists(kvNamespace, file.name);
 
-                try {
-                    // 将文件内容存储到 KV 存储中
-                    await kvNamespace.put(file.name, fileContent);
-                    return new Response('文件上传成功');
-                } catch (error) {
-                    // 处理文件上传异常
-                    console.error('文件上传时出现异常：', error);
-                    return new Response(error, { status: 500 });
-                }
-            }
+            //     try {
+            //         // 将文件内容存储到 KV 存储中
+            //         await kvNamespace.put(file.name, fileContent);
+            //         return new Response('文件上传成功');
+            //     } catch (error) {
+            //         // 处理文件上传异常
+            //         console.error('文件上传时出现异常：', error);
+            //         return new Response(error, { status: 500 });
+            //     }
+            // }
 
             // 处理配置页面请求
             const filename = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
             
-            if (filename == "config" || filename == defaultToken) {
-                // 生成配置页面的 HTML
-                const html = generateConfigHTML(url.hostname, token);
-                return new Response(html, {
-                    headers: {
-                        'Content-Type': 'text/html; charset=UTF-8',
-                    },
-                });
-            } else {
+            // if (filename == "config" || filename == defaultToken) {
+            //     // 生成配置页面的 HTML
+            //     const html = generateConfigHTML(url.hostname, token);
+            //     return new Response(html, {
+            //         headers: {
+            //             'Content-Type': 'text/html; charset=UTF-8',
+            //         },
+            //     });
+            // } else {
                 // 若请求的文件存在于 KV 存储中，则返回文件内容
+            try {
                 const value = await kvNamespace.get(filename);
-                    return new Response(value , {
-                        status: 200,
-                        headers: { 'content-type': 'text/plain; charset=utf-8' },
-                    });
+                return new Response(value , {
+                    status: 200,
+                    headers: { 'content-type': 'text/plain; charset=utf-8' },
+                });
+            } catch {
+                return new Response('404 File Not Found.', {
+                    status: 404,
+                    headers: { 'content-type': 'text/plain; charset=utf-8' },
+                });
             }
+            // }
 
         } else if (url.pathname == "/"){
-            // 处理根路径请求，返回欢迎页面
-            return new Response(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                <title>Welcome to nginx!</title>
-                <style>
-                    body {
-                        width: 35em;
-                        margin: 0 auto;
-                        font-family: Tahoma, Verdana, Arial, sans-serif;
-                    }
-                </style>
-                </head>
-                <body>
-                <h1>Welcome to nginx!</h1>
-                <p>If you see this page, the nginx web server is successfully installed and
-                working. Further configuration is required.</p>
-                
-                <p>For online documentation and support please refer to
-                <a href="http://nginx.org/">nginx.org</a>.<br/>
-                Commercial support is available at
-                <a href="http://nginx.com/">nginx.com</a>.</p>
-                
-                <p><em>Thank you for using nginx.</em></p>
-                </body>
-                </html>
-                `, {
+            // 处理根路径请求，返回欢迎页面 (nginx)
+            return new Response(indexPage(), {
                 headers: {
                     'Content-Type': 'text/html; charset=UTF-8',
                 },
             });
         } else {
             // 处理无效 token 请求
-            return new Response('token 有误', {
-                status: 400,
+            return new Response('404 File Not Found.', {
+                status: 404,
                 headers: { 'content-type': 'text/plain; charset=utf-8' },
             });
         }
@@ -253,5 +234,35 @@ function generateConfigHTML(domain, token) {
         </script>
         </body>
         </html>
+    `;
+}
+
+function indexPage() {
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Welcome to nginx!</title>
+    <style>
+        body {
+            width: 35em;
+            margin: 0 auto;
+            font-family: Tahoma, Verdana, Arial, sans-serif;
+        }
+    </style>
+    </head>
+    <body>
+    <h1>Welcome to nginx!</h1>
+    <p>If you see this page, the nginx web server is successfully installed and
+    working. Further configuration is required.</p>
+    
+    <p>For online documentation and support please refer to
+    <a href="http://nginx.org/">nginx.org</a>.<br/>
+    Commercial support is available at
+    <a href="http://nginx.com/">nginx.com</a>.</p>
+    
+    <p><em>Thank you for using nginx.</em></p>
+    </body>
+    </html>
     `;
 }
