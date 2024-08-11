@@ -40,6 +40,8 @@ Mod by @wyf9.
 - 变量: `KV`
 - 命名空间: 选择在第 2 步中创建的 KV 命名空间
 
+> *(可选)* 设置环境变量 `KV_ID`, 值为上面 KV 命名空间的 ID (KV 命名空间详情页的 `命名空间 ID`)
+
 ~~5. **访问配置页面**~~
 
 ~~例如 您的workers项目域名为：`txt.yixiu.workers.dev` , token值为 `@yixiu`；~~
@@ -61,6 +63,8 @@ Mod by @wyf9.
 您可以使用 Cloudflare Dashboard 修改 KV 命名空间的内容, 同时支持文件上传或直接编辑等。
 
 编辑时的 `键` 为文件名，`值` 为文件内容。
+
+> 如果在第 4 步中设置了环境变量 `KV_ID`，可以直接使用 `https://您的Workers域名/@manage` 快速跳转到 Dashboard 的 KV 命名空间详情页，否则跳转到命名空间列表。
 
 7. **通过 URL 访问文件**
 
