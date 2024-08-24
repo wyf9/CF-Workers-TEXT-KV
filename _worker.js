@@ -28,8 +28,7 @@ export default {
             token = defaultToken;
         } else if (url.pathname === `/@manage`) {
             // 跳转至 Workers KV 管理界面
-            let kvNamespaceId = env.KV_ID || ''
-            let manageUrl = `https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces/${kvNamespaceId}`
+            let manageUrl = 'https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces/'
             return Response.redirect(manageUrl, 302);
         } else {
             // 否则从 URL 参数中获取 token
